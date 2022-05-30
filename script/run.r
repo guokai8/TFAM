@@ -45,22 +45,22 @@ reticulate::py_config()
 scr<-import("scrublet")
 wt1d<-scr$Scrublet(counts_matrix = t(as.matrix(wt1@assays$RNA@counts)),expected_doublet_rate=0.1)
 wt1d<-wt1d$scrub_doublets(min_counts=2, min_cells=3, min_gene_variability_pctl=85, n_prin_comps=50L)
-###
+###cutoff 0.65
 wt1s<-as.vector(wt1d[[1]])
 wt1p<-as.vector(wt1d[[2]])
 wt2d<-scr$Scrublet(counts_matrix = t(as.matrix(wt2@assays$RNA@counts)),expected_doublet_rate=0.1)
 wt2d<-wt2d$scrub_doublets(min_counts=2, min_cells=3, min_gene_variability_pctl=85, n_prin_comps=50L)
-### 
+### cutoff 0.62
 wt2s<-as.vector(wt2d[[1]])
 wt2p<-as.vector(wt2d[[2]])
 ko1d<-scr$Scrublet(counts_matrix = t(as.matrix(ko1@assays$RNA@counts)),expected_doublet_rate=0.1)
 ko1d<-ko1d$scrub_doublets(min_counts=2, min_cells=3, min_gene_variability_pctl=85, n_prin_comps=50L)
-###
+### cutoff 0.58
 ko1s<-as.vector(ko1d[[1]])
 ko1p<-as.vector(ko1d[[2]])
 ko2d<-scr$Scrublet(counts_matrix = t(as.matrix(ko2@assays$RNA@counts)),expected_doublet_rate=0.1)
 ko2d<-ko2d$scrub_doublets(min_counts=2, min_cells=3, min_gene_variability_pctl=85, n_prin_comps=50L)
-### 
+### cutoff 0.22
 ko2s<-as.vector(ko2d[[1]])
 ko2p<-as.vector(ko2d[[2]])
 #### assign back
@@ -163,15 +163,9 @@ sapply(grep("^integrated_snn_res",colnames(sam.integrated@meta.data),value = TRU
        function(x) length(unique(sam.integrated@meta.data[,x])))
 
 sam.integrated <- FindClusters(sam.integrated, resolution = 0.7)
+sam.integrated<-RunTSNE(sam.integrated,dims = 1:30)
 sam.integrated$Group<-sub('\\d+','',sam.integrated$group)
 #########################################################
-###
-DimPlot(sam.integrated,split.by = "Group",cols=c(distcolor[1:14],lightcolor[1:12]),label = T,repel = T)+NoLegend()
-dev.print(pdf,file="sample_umap_new.pdf")
-##########################################################
-DimPlot(sam.integrated, reduction = "umap", label=T,cols=c(distcolor[1:14],lightcolor[1:12]),repel = T)+NoLegend()
-dev.print(pdf,file="sample_umap_label_all_new.pdf")
-##############################################################
 #############################################################
 library(future)
 plan("multiprocess", workers = 40)
@@ -185,9 +179,7 @@ get_conserved <- function(cluster){
 }
 conserved_markers <- map_dfr(0:26, get_conserved)
 conserved_markers %>% group_by(cluster_id) %>% top_n(n = 2, wt = WT_avg_log2FC)
-#sample.combined<-sample.combined.bk
-sam.integrated.bk<-sam.integrated
-DefaultAssay(sam.integrated) <- "RNA"
+####
 ###################################################################
 clusterid<-c("BC1","CD8+ Naive","CD4+ Naive","Erythroid","CD8+","CD4+","NK",
              "PC1","BC2","Erythroid","Plasma","BC3",
@@ -199,13 +191,17 @@ sam.integrated$celltype<-Idents(sam.integrated)
 mycol<-c("#A6761D" ,"#D95F02","deepskyblue" ,"#E7298A" ,"#7570B3","#E6AB02", "#A6CEE3" ,"#1F78B4","#B2DF8A","#33A02C","slateblue1","darkgreen" ,"darkred","plum1","darkmagenta" ,
          "hotpink2","magenta2", "#57C3F3","#E59CC4" ,"#23452F" ,"grey60")
 names(mycol)<-c("BC1","CD4+ Naive", "BC2","CD8+ Naive","Erythroid","CD8+","PC1","CD4+","NK","BC3","Neu","TAC","BC4","Plasma","Mac","Mono","DC","PC2","iDC","PC3","pDC")
-#######
+##### Figure S1A
+DimPlot(sam.integrated,label=T,cols=mycol,reduction = "tsne")
+dev.print(pdf,file="tsne_label.pdf")
+####### Figure 1B
 gene1<-c("Hbb-bt","Hbb-bs")
 samf<-subset(sam.integrated,celltype!="Erythroid")
 fcol<-mycol[levels(unique(samf$celltype))]
 DimPlot(samf,cols=fcol,split.by = "Group",reduction = "tsne",label=T)
 dev.print(pdf,file="tsne_label_group.pdf")
 #######################
+### check markers
 genes<-c("Cd79a","Ms4a1","Cd19","Ebf1","Il7r",
          "Cd3d","Cd3g","Cd3e",
          "Tcf7","Cd79b","Cd52","Cd74","Trbc2",
@@ -216,13 +212,9 @@ genes<-c("Cd79a","Ms4a1","Cd19","Ebf1","Il7r",
          "Ly6c2","Ccr2","Lyz2","Ighg1","H2-Aa","Cst3","H2-Ab1",
          "H2-Eb1","Bst2","Irf8","Tcf4")
 DotPlot(sam.integrated,features = genes,cluster.idents = T,cols=c("lightgrey","red"))+coord_flip()+theme(axis.text.x=element_text(angle=90,hjust = 1,vjust = 0.5))
-dev.print(pdf,file="marker.pdf")
 ########################
+###Figure S1B
 meta<-samf@meta.data
-meta%>%group_by(Group,celltype)%>%summarise(count=n())%>%mutate(pro=count/sum(count))%>%
-  ggplot(aes(Group,pro,fill=celltype))+geom_bar(stat="identity")+scale_fill_manual(values=fcol)+
-  theme_light(base_size = 15)+coord_flip()+theme(legend.position = "top")+labs(fill="")
-dev.print(pdf,file="cell_prop.pdf")
 meta%>%group_by(Group,celltype)%>%summarise(count=n())%>%mutate(pro=count/sum(count))%>%dplyr::filter(Group=="WT")%>%
 ggplot(aes(x=2,pro,fill=celltype))+geom_bar(width = 1, size = 0.1, color = "white", stat = "identity")+scale_fill_manual(values = fcol)+
   geom_text_repel(aes(label = paste0(round(100*pro,1), "%")), position = position_stack(vjust = 0.5)) + 
@@ -247,6 +239,7 @@ meta%>%group_by(Group,celltype)%>%summarise(count=n())%>%mutate(pro=count/sum(co
 
 dev.print(pdf,file="cell_prop_KO.pdf")
 #######################
+###Figure S1B
 meta%>%group_by(Group,celltype)%>%summarise(count=n())%>%
   ggplot(aes(Group,count,fill=celltype))+geom_bar(stat="identity")+scale_fill_manual(values=fcol)+
   theme_light(base_size = 15)+coord_flip()+theme(legend.position = "top")+labs(fill="")+xlab("")+ylab("")
@@ -278,6 +271,7 @@ for (i in names(x = saml)) {
   samf[[i]] <- CreateAssayObject(counts = assay)
 }
 #############################################
+###Figure S1C
 geness<-c("Ms4a1","Cd19","Ebf1","Cd79a","Il7r","Cd3d","Cd3g","Tcf7","Cd74","Trbc2","Cd8a","Cd8b1","Mki67",
          "H2afz","Hist1h2ae","Nkg7","Ccl5","Klrd1","S100a8","S100a9","Ran","Nme1","Eif5a",
          "Jchain","Igha","Xbp1","C1qa","Mafb","Mrc1","Ly6c2","Ccr2","Lyz2","H2-Aa",
@@ -294,8 +288,6 @@ cd4<-subset(samf,celltype%in%c("CD4+","CD4+ Naive"))
 ###DEGs and GSEA
 samf$condition<-paste(samf$Group,samf$celltype,sep="_")
 Idents(samf)<-"condition"
-library(future)
-plan("multiprocess", workers = 40)
 deg<-lapply(as.character(unique(samf$celltype)), function(x)FindMarkers(samf,ident.1 = paste("KO",x,sep="_"),ident.2 = paste("WT",x,sep="_"),test.use = "MAST",logfc.threshold = 0))
 names(deg)<-as.character(unique(samf$celltype))
 library(richR)
@@ -313,16 +305,32 @@ selp<-c("Antigen processing and presentation","B cell receptor signaling pathway
         "Hematopoietic cell lineage","IL-17 signaling pathway",
         "Natural killer cell mediated cytotoxicity","Oxidative phosphorylation",
         "Parkinson disease","PD-L1 expression and PD-1 checkpoint pathway in cancer",
-        "Ribosome","TNF signaling pathway")
+        "TNF signaling pathway")
+
+paths<-c("Parkinson disease","Oxidative phosphorylation","IL-17 signaling pathway",
+         "Hematopoietic cell lineage","Cytokine-cytokine receptor interaction",
+         "Chemokine signaling pathway","Amyotrophic lateral sclerosis","Alzheimer disease")
 #######
+### Figure S1D
 res<-do.call(rbind,lapply(kegg, function(x)result(x)))
 res$Group<-sub('\\..*','',rownames(res))
-res<-subset(res,padj<0.05)
-
-res$Group<-factor(res$Group,levels=c("B","NB1","NB2","Follicular B","CD4+ Memory","CD4+ Naive","CD8+","CD8+ Naive",
+res<-subset(res,pval<0.01)
+res$Group<-factor(res$Group,levels=c("BC1","BC2","BC3","BC4","CD4+","CD4+ Naive","CD8+","CD8+ Naive",
                                      "PC1","PC2","PC3","NK","Neu","TAC","Plasma","Mac","Mono","DC","iDC","pDC"))
 
-ggplot(subset(res,pathway%in%c(selp)),aes(Group,pathway,color=NES,size=-log10(padj)))+geom_point()+
+ggplot(subset(res,pathway%in%selp),aes(Group,pathway,color=NES,size=-log10(pval)))+geom_point()+
   scale_color_gradient2(low="cyan4",high="red",mid="white",midpoint = 0)+theme_minimal(base_size = 14)+
   theme(axis.text.x = element_text(angle=90,hjust=1,vjust = 0.5))+xlab("")
-
+dev.print(pdf,file="gsea_all_select_path.pdf")
+#### Figure 3G
+ggplot(subset(res,Group%in%c("Mac","Mono","DC","iDC","pDC")&pathway%in%unique(paths)),aes(Group,pathway,color=NES,size=-log10(pval)))+geom_point()+
+dev.print(pdf,file="gsea_mono_path.pdf")
+#### Figure S1E
+FeaturePlot(sam.integrated,reduction = "tsne",features = "Fcer2a",split.by = "Group",cols=c("ghostwhite","red"))
+dev.print(pdf,file="Fcer2a_tsne.pdf")
+FeaturePlot(sam.integrated,reduction = "tsne",features = "Zfp36l2",split.by = "Group",cols=c("ghostwhite","red"))
+dev.print(pdf,file="Zfp36l2_tsne.pdf")
+FeaturePlot(sam.integrated,reduction = "tsne",features = "Cd79b",split.by = "Group",cols=c("ghostwhite","red"))
+dev.print(pdf,file="Cd79b_tsne.pdf")
+FeaturePlot(sam.integrated,reduction = "tsne",features = "S100a6",split.by = "Group",cols=c("ghostwhite","red"))
+dev.print(pdf,file="S100a6_tsne.pdf")
