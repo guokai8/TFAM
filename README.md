@@ -6,10 +6,11 @@ Data were collected after mapping all fastq files to the mm10 genome with the ce
 Please check the sessionInfo.txt
 
 #### 
-run the __run.r__ for clustering, cell annotation, Differential expressed analysis and GSEA for all cell types.
+run the __run.r__ for clustering, cell annotation, Differential expressed analysis and GSEA for all cell types. The metadata.csv and Embedding.csv in the data folder can be used to skip the integration, clustering analysis. The metadata.csv includes all cell information and the Embedding.csv includes UMAP and TSNE information.
 
 #### 
-run the __cd4.r__ for the cd4 analysis
+run the __cd4.r__ for the cd4 analysis. The cd4metadata.csv and cd4Embedding.csv in the data folder can be used to skip the integration, clustering analysis. The cd4metadata.csv includes all cell information and the cd4Embedding.csv includes UMAP and TSNE information.
 
 #### 
-run the __cd4_traj.r__, __cd4_scenic.r__ and __cd4_velo.r__ for all other analysis
+run the __cd4_traj.r__, __cd4_scenic.r__ and __cd4_velo.r__ for all other analysis. The cd4_traj.rdata and cd4_scenic.rdata in the data folder are the results from Monocle and pySCEINIC packages.
+
