@@ -45,22 +45,22 @@ reticulate::py_config()
 scr<-import("scrublet")
 wt1d<-scr$Scrublet(counts_matrix = t(as.matrix(wt1@assays$RNA@counts)),expected_doublet_rate=0.1)
 wt1d<-wt1d$scrub_doublets(min_counts=2, min_cells=3, min_gene_variability_pctl=85, n_prin_comps=50L)
-###cutoff 0.65
+###
 wt1s<-as.vector(wt1d[[1]])
 wt1p<-as.vector(wt1d[[2]])
 wt2d<-scr$Scrublet(counts_matrix = t(as.matrix(wt2@assays$RNA@counts)),expected_doublet_rate=0.1)
 wt2d<-wt2d$scrub_doublets(min_counts=2, min_cells=3, min_gene_variability_pctl=85, n_prin_comps=50L)
-### cutoff 0.62
+### 
 wt2s<-as.vector(wt2d[[1]])
 wt2p<-as.vector(wt2d[[2]])
 ko1d<-scr$Scrublet(counts_matrix = t(as.matrix(ko1@assays$RNA@counts)),expected_doublet_rate=0.1)
 ko1d<-ko1d$scrub_doublets(min_counts=2, min_cells=3, min_gene_variability_pctl=85, n_prin_comps=50L)
-### cutoff 0.58
+### 
 ko1s<-as.vector(ko1d[[1]])
 ko1p<-as.vector(ko1d[[2]])
 ko2d<-scr$Scrublet(counts_matrix = t(as.matrix(ko2@assays$RNA@counts)),expected_doublet_rate=0.1)
 ko2d<-ko2d$scrub_doublets(min_counts=2, min_cells=3, min_gene_variability_pctl=85, n_prin_comps=50L)
-### cutoff 0.22
+### 
 ko2s<-as.vector(ko2d[[1]])
 ko2p<-as.vector(ko2d[[2]])
 #### assign back
@@ -245,7 +245,7 @@ meta%>%group_by(Group,celltype)%>%summarise(count=n())%>%
   theme_light(base_size = 15)+coord_flip()+theme(legend.position = "top")+labs(fill="")+xlab("")+ylab("")
 dev.print(pdf,file="cell_number.pdf")
 #######################################
-##
+## read loom files
 library(SeuratWrappers)
 wt1loom<-ReadVelocity("/home/guokai8/ram/res/75_1/velocyto/75_1.loom")
 wt2loom<-ReadVelocity("/home/guokai8/ram/res/75_2/velocyto/75_2.loom")
@@ -282,14 +282,16 @@ samf$celltype<-factor(as.vector(samf$celltype),levels=c("BC1","BC2","BC3","BC4",
 Idents(samf)<-"celltype"
 DotPlot(samf,features = geness,cluster.idents = F)+theme(axis.text.x=element_text(angle=90,hjust = 1,vjust = 0.5))+scale_color_viridis_c()
 dev.print(pdf,file="marker_label.pdf")
-###
+### save CD4 cells
 cd4<-subset(samf,celltype%in%c("CD4+","CD4+ Naive"))
-#####
-###DEGs and GSEA
+save(cd4,file="cd4.rdata",compress=T)
+############################################
+### DEGs and GSEA for celltypes
 samf$condition<-paste(samf$Group,samf$celltype,sep="_")
 Idents(samf)<-"condition"
 deg<-lapply(as.character(unique(samf$celltype)), function(x)FindMarkers(samf,ident.1 = paste("KO",x,sep="_"),ident.2 = paste("WT",x,sep="_"),test.use = "MAST",logfc.threshold = 0))
 names(deg)<-as.character(unique(samf$celltype))
+#### devtools::install_github('hurlab/richR')
 library(richR)
 mmko<-buildAnnot(species = "mouse",keytype = "SYMBOL",anntype = "KEGG",builtin = F)
 gseak<-function(x){
@@ -321,7 +323,7 @@ res$Group<-factor(res$Group,levels=c("BC1","BC2","BC3","BC4","CD4+","CD4+ Naive"
 ggplot(subset(res,pathway%in%selp),aes(Group,pathway,color=NES,size=-log10(pval)))+geom_point()+
   scale_color_gradient2(low="cyan4",high="red",mid="white",midpoint = 0)+theme_minimal(base_size = 14)+
   theme(axis.text.x = element_text(angle=90,hjust=1,vjust = 0.5))+xlab("")
-dev.print(pdf,file="gsea_all_select_path.pdf")
+dev.print(pdf,file="gsea_select_path.pdf")
 #### Figure 3G
 ggplot(subset(res,Group%in%c("Mac","Mono","DC","iDC","pDC")&pathway%in%unique(paths)),aes(Group,pathway,color=NES,size=-log10(pval)))+geom_point()+
 dev.print(pdf,file="gsea_mono_path.pdf")
