@@ -45,22 +45,22 @@ reticulate::py_config()
 scr<-import("scrublet")
 wt1d<-scr$Scrublet(counts_matrix = t(as.matrix(wt1@assays$RNA@counts)),expected_doublet_rate=0.1)
 wt1d<-wt1d$scrub_doublets(min_counts=2, min_cells=3, min_gene_variability_pctl=85, n_prin_comps=50L)
-###
+### cutoff 0.80
 wt1s<-as.vector(wt1d[[1]])
 wt1p<-as.vector(wt1d[[2]])
 wt2d<-scr$Scrublet(counts_matrix = t(as.matrix(wt2@assays$RNA@counts)),expected_doublet_rate=0.1)
 wt2d<-wt2d$scrub_doublets(min_counts=2, min_cells=3, min_gene_variability_pctl=85, n_prin_comps=50L)
-### 
+### cutoff 0.36
 wt2s<-as.vector(wt2d[[1]])
 wt2p<-as.vector(wt2d[[2]])
 ko1d<-scr$Scrublet(counts_matrix = t(as.matrix(ko1@assays$RNA@counts)),expected_doublet_rate=0.1)
 ko1d<-ko1d$scrub_doublets(min_counts=2, min_cells=3, min_gene_variability_pctl=85, n_prin_comps=50L)
-### 
+### cutoff 0.42
 ko1s<-as.vector(ko1d[[1]])
 ko1p<-as.vector(ko1d[[2]])
 ko2d<-scr$Scrublet(counts_matrix = t(as.matrix(ko2@assays$RNA@counts)),expected_doublet_rate=0.1)
 ko2d<-ko2d$scrub_doublets(min_counts=2, min_cells=3, min_gene_variability_pctl=85, n_prin_comps=50L)
-### 
+### cutoff 0.35
 ko2s<-as.vector(ko2d[[1]])
 ko2p<-as.vector(ko2d[[2]])
 #### assign back
