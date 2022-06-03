@@ -3,7 +3,7 @@ Mitochondrial Transcription Factor A Regulates FOXP3+ T Cell Mediated Maintenanc
 ### Description
 Data were collected after mapping all fastq files to the mm10 genome with the cellranger v6.0 software with default paramaters by using "cellranger count". 
 ### Required packages:
-Please check the sessionInfo.txt
+Please check the sessionInfo.txt in the script folder
 
 #### 1. Read data, integration, clustering
 run the __run.r__ for clustering, cell annotation, differential expressed analysis and GSEA for all cell types. The metadata.csv and Embedding.csv in the data folder can be used to skip the integration, clustering analysis. The metadata.csv includes all cell information and the Embedding.csv includes UMAP and TSNE information.
