@@ -21,7 +21,7 @@ other attached packages:
 [13] purrr_0.3.4             readr_2.0.2             tidyr_1.1.4             tibble_3.1.5            ggplot2_3.3.5           tidyverse_1.3.1        
 [19] AnnotationHub_3.0.2     BiocFileCache_2.0.0     dbplyr_2.1.1            GenomicFeatures_1.44.2  AnnotationDbi_1.54.1    Biobase_2.52.0         
 [25] GenomicRanges_1.44.0    GenomeInfoDb_1.28.4     IRanges_2.26.0          S4Vectors_0.30.2        BiocGenerics_0.38.0     cowplot_1.1.1          
-[31] SeuratObject_4.0.2      Seurat_4.0.2           
+[31] SeuratObject_4.0.2      Seurat_4.0.2            richR_0.0.20          
 
 loaded via a namespace (and not attached):
   [1] utf8_1.2.2                    R.utils_2.10.1                reticulate_1.22               tidyselect_1.1.1             
